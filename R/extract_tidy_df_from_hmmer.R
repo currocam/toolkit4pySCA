@@ -3,7 +3,7 @@
 #' @param xml.document A xml_document downloaded from HMMER
 #' @param by_column A character vector for joining domains hash with sequence's hits hash.
 #'
-#' @return
+#' @return DataFrame
 #' @export
 #'
 #' @examples
