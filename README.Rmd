@@ -1,5 +1,6 @@
 ---
 output: github_document
+always_allow_html: true
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -32,9 +33,13 @@ devtools::install_github("currocam/toolkit4pySCA")
 
 ## Example
 
-This is a basic example showing how to carry out a typical workflow:
+This is a basic example showing how to carry out a typical workflow. 
 
-```{r example}
+### phmmer
+
+First, we performed a search for sequences homologous to the sequence of interest using phmmer, indicating the sequence of interest and the database. This can be done using `quick_AA_search_using_phmmer`, `download_xml_from_phmer()` or downloading the xml file from the web server. Actually, programmatic access to the HMMER only seems to make sense if you need to perform a lot of queries and want to automate the process. 
+
+``` r 
 library(toolkit4pySCA)
 library(Biostrings)
 
@@ -44,15 +49,72 @@ example.seq <- AAString(
   "KHSWYHGPVSRNAAEYLLSSGINGSFLVRESESSPGQRSISLRYEGRVYHYRINTASDGKLYVSSESRFNTLAELV",
   "HHHSTVADGLITTLHYPAP")
   )
-xml.document <- quick_AA_search_using_phmmer(example.seq)
-class(xml.document)
+db <- "pdb"
+raw.xml <- quick_AA_search_using_phmmer(example.seq, db)
+raw.xml %>%
+  read_xml() %>%
+  write_xml(xml.document,file = "2abl_A_pdb.xml")
+xml.document <- read_xml("2abl_A_pdb.xml")
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
+```{r read_xml, include=FALSE}
+library(toolkit4pySCA)
+library(Biostrings)
+library(xml2)
 
-```{r cars}
-summary(cars)
+xml.file.path <- system.file("extdata", "2abl_A_pdb.xml", package = "toolkit4pySCA")
+xml.document <- read_xml(xml.file.path)
 ```
+
+
+``` r
+library(dplyr)
+hits <- extract_tidy_hits_from_xml(xml.document)
+stats <- extract_tidy_stats_from_xml(xml.document)
+hits%>%
+  select(pvalue, evalue, score) %>%
+  summary()
+```
+
+```{r hits_stats, include=FALSE, warning=FALSE, message=FALSE}
+library(dplyr)
+hits <- extract_tidy_hits_from_xml(xml.document)
+stats <- extract_tidy_stats_from_xml(xml.document)
+```
+
+```{r summary, echo=FALSE, warning=FALSE, message=FALSE}
+library(kableExtra)
+hits%>%
+  select(pvalue, evalue, score) %>%
+  summary() %>%
+  kbl() %>%
+  kable_styling()
+```
+
+```{r ph, warning=FALSE, message=FALSE}
+library(forcats)
+hits%>%
+  mutate(
+    ph = fct_lump(ph, 2),
+  ) %>%
+  pull(ph)%>%
+  fct_count(prop = TRUE, sort = TRUE) %>%
+  kbl() %>%
+  kable_styling()
+```
+
+```{r hist_ph_desc_hmmer, warning=FALSE, message=FALSE,dpi=200}
+library(ggplot2)
+hits%>%
+  filter(evalue < 0.001) %>%
+  mutate(
+    ph = fct_lump(ph, 2),
+    desc = fct_lump(desc, 4)
+  )%>%
+  ggplot(aes(y=desc, fill = ph)) + 
+    geom_histogram(stat = "count")
+```
+
 
 You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
 

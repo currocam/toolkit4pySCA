@@ -4,10 +4,12 @@
 \alias{quick_AA_search_using_phmmer}
 \title{quick_AA_search_using_phmmer}
 \usage{
-quick_AA_search_using_phmmer(seq)
+quick_AA_search_using_phmmer(seq, seqdb)
 }
 \arguments{
-\item{seq}{An aminocid sequence}
+\item{seq}{A string of an AA sequence}
+
+\item{seqdb}{A string of target database.}
 }
 \value{
 A xml_document containig the results from phmmer.
@@ -17,6 +19,6 @@ quick_AA_search_using_phmmer
 }
 \examples{
 \dontrun{
-xml.document <- get_phmer_results_from_seq("DPNLFVALYDFVASGDNTLSIT")
+xml.document <- get_phmer_results_from_seq("DPNLFVALYDFVASGDNTLSIT", "pdb")
 }
 }

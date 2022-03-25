@@ -1,15 +1,17 @@
 #' quick_AA_search_using_phmmer
 #'
-#' @param seq An aminocid sequence
+#' @param seq A string of an AA sequence
+#' @param seqdb A string of target database.
+
 #'
 #' @return A xml_document containig the results from phmmer.
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' xml.document <- get_phmer_results_from_seq("DPNLFVALYDFVASGDNTLSIT")
+#' xml.document <- get_phmer_results_from_seq("DPNLFVALYDFVASGDNTLSIT", "pdb")
 #' }
-quick_AA_search_using_phmmer <- function(seq){
+quick_AA_search_using_phmmer <- function(seq, seqdb){
   seq <- as.character(seq)
   if (!requireNamespace("Biostrings", quietly = TRUE)) {
     stop(
@@ -41,9 +43,7 @@ quick_AA_search_using_phmmer <- function(seq){
 
   download_xml_from_phmer(
       body_list = list(
-        seqdb = "pdb",seq = seq)
+        seqdb = seqdb,seq = seq)
     ) %>%
-      xml2::read_xml() %>%
-      magrittr::extract2(1)%>%
       return()
 }

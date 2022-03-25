@@ -2,5 +2,7 @@
 
 export("%>%")
 export(download_xml_from_phmer)
+export(extract_tidy_hits_from_xml)
+export(extract_tidy_stats_from_xml)
 export(quick_AA_search_using_phmmer)
 importFrom(magrittr,"%>%")

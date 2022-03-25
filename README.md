@@ -25,40 +25,21 @@ devtools::install_github("currocam/toolkit4pySCA")
 
 ## Example
 
-This is a basic example showing how to carry out a typical workflow:
+This is a basic example showing how to carry out a typical workflow.
+
+### phmmer
+
+First, we performed a search for sequences homologous to the sequence of
+interest using phmmer, indicating the sequence of interest and the
+database. This can be done using `quick_AA_search_using_phmmer`,
+`download_xml_from_phmer()` or downloading the xml file from the web
+server. Actually, programmatic access to the HMMER only seems to make
+sense if you need to perform a lot of queries and want to automate the
+process.
 
 ``` r
 library(toolkit4pySCA)
 library(Biostrings)
-#> Loading required package: BiocGenerics
-#> 
-#> Attaching package: 'BiocGenerics'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     IQR, mad, sd, var, xtabs
-#> The following objects are masked from 'package:base':
-#> 
-#>     anyDuplicated, append, as.data.frame, basename, cbind, colnames,
-#>     dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
-#>     grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
-#>     order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
-#>     rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
-#>     union, unique, unsplit, which.max, which.min
-#> Loading required package: S4Vectors
-#> Loading required package: stats4
-#> 
-#> Attaching package: 'S4Vectors'
-#> The following objects are masked from 'package:base':
-#> 
-#>     expand.grid, I, unname
-#> Loading required package: IRanges
-#> Loading required package: XVector
-#> Loading required package: GenomeInfoDb
-#> 
-#> Attaching package: 'Biostrings'
-#> The following object is masked from 'package:base':
-#> 
-#>     strsplit
 
 # >2abl_A mol:protein length:163  ABL TYROSINE KINASE
 example.seq <- AAString(
@@ -66,24 +47,208 @@ example.seq <- AAString(
   "KHSWYHGPVSRNAAEYLLSSGINGSFLVRESESSPGQRSISLRYEGRVYHYRINTASDGKLYVSSESRFNTLAELV",
   "HHHSTVADGLITTLHYPAP")
   )
-xml.document <- quick_AA_search_using_phmmer(example.seq)
-class(xml.document)
-#> [1] "externalptr"
+db <- "pdb"
+raw.xml <- quick_AA_search_using_phmmer(example.seq, db)
+raw.xml %>%
+  read_xml() %>%
+  write_xml(xml.document,file = "2abl_A_pdb.xml")
+xml.document <- read_xml("2abl_A_pdb.xml")
 ```
-
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
 
 ``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
+library(dplyr)
+hits <- extract_tidy_hits_from_xml(xml.document)
+stats <- extract_tidy_stats_from_xml(xml.document)
+hits%>%
+  select(pvalue, evalue, score) %>%
+  summary()
 ```
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+pvalue
+</th>
+<th style="text-align:left;">
+evalue
+</th>
+<th style="text-align:left;">
+score
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Min. :-265.00
+</td>
+<td style="text-align:left;">
+Min. :0.0000000
+</td>
+<td style="text-align:left;">
+Min. : 14.20
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+1st Qu.: -39.72
+</td>
+<td style="text-align:left;">
+1st Qu.:0.0000000
+</td>
+<td style="text-align:left;">
+1st Qu.: 22.80
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Median : -27.96
+</td>
+<td style="text-align:left;">
+Median :0.0000004
+</td>
+<td style="text-align:left;">
+Median : 35.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Mean : -35.80
+</td>
+<td style="text-align:left;">
+Mean :0.0341706
+</td>
+<td style="text-align:left;">
+Mean : 46.09
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+3rd Qu.: -19.29
+</td>
+<td style="text-align:left;">
+3rd Qu.:0.0023000
+</td>
+<td style="text-align:left;">
+3rd Qu.: 51.62
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Max. : -13.21
+</td>
+<td style="text-align:left;">
+Max. :1.0000000
+</td>
+<td style="text-align:left;">
+Max. :369.80
+</td>
+</tr>
+</tbody>
+</table>
+
+``` r
+library(forcats)
+hits%>%
+  mutate(
+    ph = fct_lump(ph, 2),
+  ) %>%
+  pull(ph)%>%
+  fct_count(prop = TRUE, sort = TRUE) %>%
+  kbl() %>%
+  kable_styling()
+```
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+f
+</th>
+<th style="text-align:right;">
+n
+</th>
+<th style="text-align:right;">
+p
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Chordata
+</td>
+<td style="text-align:right;">
+504
+</td>
+<td style="text-align:right;">
+0.9130435
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Other
+</td>
+<td style="text-align:right;">
+21
+</td>
+<td style="text-align:right;">
+0.0380435
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ascomycota
+</td>
+<td style="text-align:right;">
+19
+</td>
+<td style="text-align:right;">
+0.0344203
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+0.0144928
+</td>
+</tr>
+</tbody>
+</table>
+
+``` r
+library(ggplot2)
+hits%>%
+  filter(evalue < 0.001) %>%
+  mutate(
+    ph = fct_lump(ph, 2),
+    desc = fct_lump(desc, 4)
+  )%>%
+  ggplot(aes(y=desc, fill = ph)) + 
+    geom_histogram(stat = "count")
+```
+
+<img src="man/figures/README-hist_ph_desc_hmmer-1.png" width="100%" />
 
 You’ll still need to render `README.Rmd` regularly, to keep `README.md`
 up-to-date. `devtools::build_readme()` is handy for this. You could also
