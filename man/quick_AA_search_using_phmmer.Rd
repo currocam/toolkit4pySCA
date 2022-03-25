@@ -4,15 +4,15 @@
 \alias{quick_AA_search_using_phmmer}
 \title{quick_AA_search_using_phmmer}
 \usage{
-quick_AA_search_using_phmmer(seq, seqdb)
+quick_AA_search_using_phmmer(seqaa, seqdb)
 }
 \arguments{
-\item{seq}{A string of an AA sequence}
+\item{seqaa}{A character vector with AA sequences}
 
-\item{seqdb}{A string of target database.}
+\item{seqdb}{A character vector with target databases.}
 }
 \value{
-A xml_document containig the results from phmmer.
+A df containing url's for downloading different files.
 }
 \description{
 quick_AA_search_using_phmmer

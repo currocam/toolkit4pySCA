@@ -39,20 +39,26 @@ process.
 
 ``` r
 library(toolkit4pySCA)
-library(Biostrings)
+progressr::handlers(global = TRUE)
 
+db <- c("swissprot", "pdb")
 # >2abl_A mol:protein length:163  ABL TYROSINE KINASE
 example.seq <- AAString(
   paste0("MGPSENDPNLFVALYDFVASGDNTLSITKGEKLRVLGYNHNGEWCEAQTKNGQGWVPSNYITPVNSLE",
-  "KHSWYHGPVSRNAAEYLLSSGINGSFLVRESESSPGQRSISLRYEGRVYHYRINTASDGKLYVSSESRFNTLAELV",
-  "HHHSTVADGLITTLHYPAP")
-  )
-db <- "pdb"
-raw.xml <- quick_AA_search_using_phmmer(example.seq, db)
-raw.xml %>%
-  read_xml() %>%
-  write_xml(xml.document,file = "2abl_A_pdb.xml")
-xml.document <- read_xml("2abl_A_pdb.xml")
+         "KHSWYHGPVSRNAAEYLLSSGINGSFLVRESESSPGQRSISLRYEGRVYHYRINTASDGKLYVSSESRFNTLAELV",
+         "HHHSTVADGLITTLHYPAP")
+df.phmmer <- quick_AA_search_using_phmmer(example.seq, db)
+```
+
+``` r
+library(Biostrings)
+library(xml2)
+fasta.files <- readAAStringSet(fullseq.fasta.files)
+df.phmmer.info <- xml.files %>%
+  purrr::map_dfr(
+    ~read_xml(.x) %>%
+      extract_tidy_df_from_hmmer,
+    .id = "db")
 ```
 
 ``` r
@@ -64,10 +70,20 @@ hits%>%
   summary()
 ```
 
+    library(dplyr)
+    hits <- df.phmmer.info%>%
+      group_by(alisqacc) 
+    hits %>%
+      select(alisqacc, pvalue, evalue, score) %>%
+      summary()
+
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
 <th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+alisqacc
 </th>
 <th style="text-align:left;">
 pvalue
@@ -85,75 +101,93 @@ score
 <td style="text-align:left;">
 </td>
 <td style="text-align:left;">
+Length:1028
+</td>
+<td style="text-align:left;">
 Min. :-265.00
 </td>
 <td style="text-align:left;">
-Min. :0.0000000
+Min. :0.00e+00
 </td>
 <td style="text-align:left;">
-Min. : 14.20
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-</td>
-<td style="text-align:left;">
-1st Qu.: -39.72
-</td>
-<td style="text-align:left;">
-1st Qu.:0.0000000
-</td>
-<td style="text-align:left;">
-1st Qu.: 22.80
+Min. : 20.90
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
 </td>
 <td style="text-align:left;">
-Median : -27.96
+Class :character
 </td>
 <td style="text-align:left;">
-Median :0.0000004
+1st Qu.: -54.51
 </td>
 <td style="text-align:left;">
-Median : 35.00
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
+1st Qu.:0.00e+00
 </td>
 <td style="text-align:left;">
-Mean : -35.80
-</td>
-<td style="text-align:left;">
-Mean :0.0341706
-</td>
-<td style="text-align:left;">
-Mean : 46.09
+1st Qu.: 31.10
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
 </td>
 <td style="text-align:left;">
-3rd Qu.: -19.29
+Mode :character
 </td>
 <td style="text-align:left;">
-3rd Qu.:0.0023000
+Median : -36.57
 </td>
 <td style="text-align:left;">
-3rd Qu.: 51.62
+Median :0.00e+00
+</td>
+<td style="text-align:left;">
+Median : 47.20
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
 </td>
 <td style="text-align:left;">
-Max. : -13.21
+NA
 </td>
 <td style="text-align:left;">
-Max. :1.0000000
+Mean : -44.22
+</td>
+<td style="text-align:left;">
+Mean :4.12e-04
+</td>
+<td style="text-align:left;">
+Mean : 57.99
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+3rd Qu.: -25.20
+</td>
+<td style="text-align:left;">
+3rd Qu.:6.40e-06
+</td>
+<td style="text-align:left;">
+3rd Qu.: 72.50
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+Max. : -17.97
+</td>
+<td style="text-align:left;">
+Max. :8.90e-03
 </td>
 <td style="text-align:left;">
 Max. :369.80
@@ -164,7 +198,7 @@ Max. :369.80
 
 ``` r
 library(forcats)
-hits%>%
+hits %>%
   mutate(
     ph = fct_lump(ph, 2),
   ) %>%
@@ -194,21 +228,10 @@ p
 Chordata
 </td>
 <td style="text-align:right;">
-504
+894
 </td>
 <td style="text-align:right;">
-0.9130435
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Other
-</td>
-<td style="text-align:right;">
-21
-</td>
-<td style="text-align:right;">
-0.0380435
+0.8696498
 </td>
 </tr>
 <tr>
@@ -216,10 +239,43 @@ Other
 Ascomycota
 </td>
 <td style="text-align:right;">
-19
+36
 </td>
 <td style="text-align:right;">
-0.0344203
+0.0350195
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nematoda
+</td>
+<td style="text-align:right;">
+27
+</td>
+<td style="text-align:right;">
+0.0262646
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Artverviricota
+</td>
+<td style="text-align:right;">
+26
+</td>
+<td style="text-align:right;">
+0.0252918
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Arthropoda
+</td>
+<td style="text-align:right;">
+20
+</td>
+<td style="text-align:right;">
+0.0194553
 </td>
 </tr>
 <tr>
@@ -227,10 +283,76 @@ Ascomycota
 NA
 </td>
 <td style="text-align:right;">
-8
+7
 </td>
 <td style="text-align:right;">
-0.0144928
+0.0068093
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Evosea
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+0.0048638
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Cnidaria
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0.0029183
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Basidiomycota
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0.0029183
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Porifera
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0.0029183
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Discosea
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.0019455
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Firmicutes
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.0019455
 </td>
 </tr>
 </tbody>
@@ -238,12 +360,17 @@ NA
 
 ``` r
 library(ggplot2)
-hits%>%
+library(tidyr)
+library(dplyr)
+
+df.phmmer.info%>%
   filter(evalue < 0.001) %>%
   mutate(
-    ph = fct_lump(ph, 2),
-    desc = fct_lump(desc, 4)
+  desc = fct_lump_n(desc, 5),
+  ph = fct_lump(ph, 2),
   )%>%
+  group_by(ph, desc) %>%
+  nest() %>%
   ggplot(aes(y=desc, fill = ph)) + 
     geom_histogram(stat = "count")
 ```
@@ -251,37 +378,45 @@ hits%>%
 <img src="man/figures/README-hist_ph_desc_hmmer-1.png" width="100%" />
 
 ``` r
-library(progressr)
-{tax.df <- hits %>%
+tax.df <- hits %>%
     pull(taxid) %>%
     download_tax_from_ncbi() %>%
-    mutate(taxid = as.numeric(taxid))} %>%
-  with_progress()
+    mutate(taxid = as.numeric(taxid))
 #> Registered S3 method overwritten by 'hoardr':
 #>   method           from
 #>   print.cache_info httr
+#> 
+#> Attaching package: 'purrr'
+#> The following object is masked from 'package:XVector':
+#> 
+#>     compact
+#> The following object is masked from 'package:IRanges':
+#> 
+#>     reduce
 
 hits %>%
   left_join(tax.df, by = c("taxid" = "taxid"))
-#> # A tibble: 552 × 33
-#>    name   acc    arch     archScore archindex  bias desc    evalue extlink flags
-#>    <chr>  <chr>  <chr>        <dbl> <chr>     <dbl> <chr>    <dbl> <chr>   <dbl>
-#>  1 2abl_A 2abl_A PF00018…         4 23636274…   2.8 ABL … 4.5e-110 https:…     3
-#>  2 5mo4_A 5mo4_A PF00018…         5 22258305…   3   Tyro… 3.1e-108 https:…     3
-#>  3 2fo0_A 2fo0_A PF00018…         5 22258305…   3   Prot… 3.1e-108 https:…     3
-#>  4 1opk_A 1opk_A PF00018…         5 22258305…   3   Prot… 3.1e-108 https:…     3
-#>  5 1opl_A 1opl_A PF00018…         5 22258305…   3   prot… 3.6e-108 https:…     3
-#>  6 6amv_A 6amv_A PF00018…         4 23636274…   3.4 Tyro… 1.7e-107 https:…     3
-#>  7 3t04_A 3t04_A PF00017…         2 49054433…   3.9 Tyro… 2.5e- 67 https:…     3
-#>  8 5dc0_B 5dc0_B PF00017…         2 49054433…   3.8 Tyro… 4.1e- 67 https:…     3
-#>  9 1ab2_A 1ab2_A PF00017…         2 49054433…   3.3 C-AB… 1.5e- 61 https:…     3
-#> 10 4xey_B 4xey_B PF00017…         3 77813800…   2.8 Tyro… 3.4e- 61 https:…     3
-#> # … with 542 more rows, and 23 more variables: kg <chr>, ndom <dbl>,
-#> #   nincluded <dbl>, niseqs <dbl>, nregions <dbl>, nreported <dbl>, ph <chr>,
-#> #   pvalue <dbl>, score <dbl>, sindex <dbl>, species <chr>, taxid <dbl>,
-#> #   taxlink <chr>, superkingdom <chr>, kingdom <chr>, subphylum <chr>,
-#> #   superclass <chr>, class <chr>, order <chr>, suborder <chr>, family <chr>,
-#> #   subfamily <chr>, genus <chr>
+#> # A tibble: 1,028 × 88
+#> # Groups:   alisqacc [848]
+#>    db    aliId aliIdCount  aliL  aliM  aliN aliSim aliSimCount aliaseq alicsline
+#>    <chr> <dbl>      <dbl> <dbl> <dbl> <dbl>  <dbl>       <dbl> <chr>   <lgl>    
+#>  1 1     1            163   163   163   163  1             163 MGPSEN… NA       
+#>  2 1     1            162   495   163   162  1             162 GPSEND… NA       
+#>  3 1     1            162   495   163   162  1             162 GPSEND… NA       
+#>  4 1     1            162   495   163   162  1             162 GPSEND… NA       
+#>  5 1     1            162   537   163   162  1             162 GPSEND… NA       
+#>  6 1     0.994        161   255   163   162  1             162 GPSEND… NA       
+#>  7 1     1            107   123   163   107  1             107 PSNYIT… NA       
+#>  8 1     1            107   121   163   107  1             107 PSNYIT… NA       
+#>  9 1     1             99   109   163    99  1              99 NSLEKH… NA       
+#> 10 1     0.990        100   408   163   101  0.990         100 SVNSLE… NA       
+#> # … with 1,018 more rows, and 78 more variables: alihmmacc <lgl>,
+#> #   alihmmdesc <lgl>, alihmmfrom <dbl>, alihmmname <chr>, alihmmto <dbl>,
+#> #   alimline <chr>, alimmline <lgl>, alimodel <chr>, aliniseqs <dbl>,
+#> #   alintseq <lgl>, alippline <chr>, alirfline <lgl>, alisindex <dbl>,
+#> #   alisqacc <chr>, alisqdesc <chr>, alisqfrom <dbl>, alisqname <chr>,
+#> #   alisqto <dbl>, bias.x <dbl>, bitscore <dbl>, cevalue <dbl>, iali <dbl>,
+#> #   ienv <dbl>, ievalue <dbl>, is_included <dbl>, is_reported <dbl>, …
 ```
 
 You’ll still need to render `README.Rmd` regularly, to keep `README.md`

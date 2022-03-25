@@ -41,28 +41,44 @@ First, we performed a search for sequences homologous to the sequence of interes
 
 ``` r 
 library(toolkit4pySCA)
-library(Biostrings)
+progressr::handlers(global = TRUE)
 
+db <- c("swissprot", "pdb")
 # >2abl_A mol:protein length:163  ABL TYROSINE KINASE
 example.seq <- AAString(
   paste0("MGPSENDPNLFVALYDFVASGDNTLSITKGEKLRVLGYNHNGEWCEAQTKNGQGWVPSNYITPVNSLE",
-  "KHSWYHGPVSRNAAEYLLSSGINGSFLVRESESSPGQRSISLRYEGRVYHYRINTASDGKLYVSSESRFNTLAELV",
-  "HHHSTVADGLITTLHYPAP")
-  )
-db <- "pdb"
-raw.xml <- quick_AA_search_using_phmmer(example.seq, db)
-raw.xml %>%
-  read_xml() %>%
-  write_xml(xml.document,file = "2abl_A_pdb.xml")
-xml.document <- read_xml("2abl_A_pdb.xml")
+         "KHSWYHGPVSRNAAEYLLSSGINGSFLVRESESSPGQRSISLRYEGRVYHYRINTASDGKLYVSSESRFNTLAELV",
+         "HHHSTVADGLITTLHYPAP")
+df.phmmer <- quick_AA_search_using_phmmer(example.seq, db)
 ```
 
 ```{r read_xml, include=FALSE}
 library(toolkit4pySCA)
-library(xml2)
 
-xml.file.path <- system.file("extdata", "2abl_A_pdb.xml", package = "toolkit4pySCA")
-xml.document <- read_xml(xml.file.path)
+path <- system.file("extdata/",package = "toolkit4pySCA")
+xml.files <- purrr::map_chr(dir(path, pattern = "*.xml"), ~paste0(path, .x))
+fullseq.fasta.files <- purrr::map_chr(dir(path, pattern = "*fullseq.fa"), ~paste0(path, .x))
+```
+``` r
+library(Biostrings)
+library(xml2)
+fasta.files <- readAAStringSet(fullseq.fasta.files)
+df.phmmer.info <- xml.files %>%
+  purrr::map_dfr(
+    ~read_xml(.x) %>%
+      extract_tidy_df_from_hmmer,
+    .id = "db")
+```
+
+```{r, include=FALSE}
+library(Biostrings)
+library(xml2)
+fasta.files <- readAAStringSet(fullseq.fasta.files)
+df.phmmer.info <- xml.files %>%
+  purrr::map_dfr(
+    ~read_xml(.x) %>%
+      extract_tidy_df_from_hmmer,
+    .id = "db")
 ```
 
 
@@ -74,17 +90,21 @@ hits%>%
   select(pvalue, evalue, score) %>%
   summary()
 ```
-
-```{r hits_stats, include=FALSE, warning=FALSE, message=FALSE}
-library(dplyr)
-hits <- extract_tidy_hits_from_xml(xml.document)
-stats <- extract_tidy_stats_from_xml(xml.document)
 ```
-
+library(dplyr)
+hits <- df.phmmer.info%>%
+  group_by(alisqacc) 
+hits %>%
+  select(alisqacc, pvalue, evalue, score) %>%
+  summary()
+```
 ```{r summary, echo=FALSE, warning=FALSE, message=FALSE}
 library(kableExtra)
-hits%>%
-  select(pvalue, evalue, score) %>%
+library(dplyr)
+hits <- df.phmmer.info%>%
+  group_by(alisqacc) 
+hits %>%
+  select(alisqacc, pvalue, evalue, score) %>%
   summary() %>%
   kbl() %>%
   kable_styling(position = "center")
@@ -92,7 +112,7 @@ hits%>%
 
 ```{r ph, warning=FALSE, message=FALSE}
 library(forcats)
-hits%>%
+hits %>%
   mutate(
     ph = fct_lump(ph, 2),
   ) %>%
@@ -104,23 +124,26 @@ hits%>%
 
 ```{r hist_ph_desc_hmmer, warning=FALSE, message=FALSE,dpi=500}
 library(ggplot2)
-hits%>%
+library(tidyr)
+library(dplyr)
+
+df.phmmer.info%>%
   filter(evalue < 0.001) %>%
   mutate(
-    ph = fct_lump(ph, 2),
-    desc = fct_lump(desc, 4)
+  desc = fct_lump_n(desc, 5),
+  ph = fct_lump(ph, 2),
   )%>%
+  group_by(ph, desc) %>%
+  nest() %>%
   ggplot(aes(y=desc, fill = ph)) + 
     geom_histogram(stat = "count")
 ```
 
 ```{r}
-library(progressr)
-{tax.df <- hits %>%
+tax.df <- hits %>%
     pull(taxid) %>%
     download_tax_from_ncbi() %>%
-    mutate(taxid = as.numeric(taxid))} %>%
-  with_progress()
+    mutate(taxid = as.numeric(taxid))
 
 hits %>%
   left_join(tax.df, by = c("taxid" = "taxid"))
