@@ -59,7 +59,6 @@ xml.document <- read_xml("2abl_A_pdb.xml")
 
 ```{r read_xml, include=FALSE}
 library(toolkit4pySCA)
-library(Biostrings)
 library(xml2)
 
 xml.file.path <- system.file("extdata", "2abl_A_pdb.xml", package = "toolkit4pySCA")
@@ -88,7 +87,7 @@ hits%>%
   select(pvalue, evalue, score) %>%
   summary() %>%
   kbl() %>%
-  kable_styling()
+  kable_styling(position = "center")
 ```
 
 ```{r ph, warning=FALSE, message=FALSE}
@@ -100,7 +99,7 @@ hits%>%
   pull(ph)%>%
   fct_count(prop = TRUE, sort = TRUE) %>%
   kbl() %>%
-  kable_styling()
+  kable_styling(position = "center")
 ```
 
 ```{r hist_ph_desc_hmmer, warning=FALSE, message=FALSE,dpi=500}
@@ -113,6 +112,18 @@ hits%>%
   )%>%
   ggplot(aes(y=desc, fill = ph)) + 
     geom_histogram(stat = "count")
+```
+
+```{r}
+library(progressr)
+{tax.df <- hits %>%
+    pull(taxid) %>%
+    download_tax_from_ncbi() %>%
+    mutate(taxid = as.numeric(taxid))} %>%
+  with_progress()
+
+hits %>%
+  left_join(tax.df, by = c("taxid" = "taxid"))
 ```
 
 

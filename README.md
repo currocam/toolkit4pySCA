@@ -171,7 +171,7 @@ hits%>%
   pull(ph)%>%
   fct_count(prop = TRUE, sort = TRUE) %>%
   kbl() %>%
-  kable_styling()
+  kable_styling(position = "center")
 ```
 
 <table class="table" style="margin-left: auto; margin-right: auto;">
@@ -249,6 +249,40 @@ hits%>%
 ```
 
 <img src="man/figures/README-hist_ph_desc_hmmer-1.png" width="100%" />
+
+``` r
+library(progressr)
+{tax.df <- hits %>%
+    pull(taxid) %>%
+    download_tax_from_ncbi() %>%
+    mutate(taxid = as.numeric(taxid))} %>%
+  with_progress()
+#> Registered S3 method overwritten by 'hoardr':
+#>   method           from
+#>   print.cache_info httr
+
+hits %>%
+  left_join(tax.df, by = c("taxid" = "taxid"))
+#> # A tibble: 552 × 33
+#>    name   acc    arch     archScore archindex  bias desc    evalue extlink flags
+#>    <chr>  <chr>  <chr>        <dbl> <chr>     <dbl> <chr>    <dbl> <chr>   <dbl>
+#>  1 2abl_A 2abl_A PF00018…         4 23636274…   2.8 ABL … 4.5e-110 https:…     3
+#>  2 5mo4_A 5mo4_A PF00018…         5 22258305…   3   Tyro… 3.1e-108 https:…     3
+#>  3 2fo0_A 2fo0_A PF00018…         5 22258305…   3   Prot… 3.1e-108 https:…     3
+#>  4 1opk_A 1opk_A PF00018…         5 22258305…   3   Prot… 3.1e-108 https:…     3
+#>  5 1opl_A 1opl_A PF00018…         5 22258305…   3   prot… 3.6e-108 https:…     3
+#>  6 6amv_A 6amv_A PF00018…         4 23636274…   3.4 Tyro… 1.7e-107 https:…     3
+#>  7 3t04_A 3t04_A PF00017…         2 49054433…   3.9 Tyro… 2.5e- 67 https:…     3
+#>  8 5dc0_B 5dc0_B PF00017…         2 49054433…   3.8 Tyro… 4.1e- 67 https:…     3
+#>  9 1ab2_A 1ab2_A PF00017…         2 49054433…   3.3 C-AB… 1.5e- 61 https:…     3
+#> 10 4xey_B 4xey_B PF00017…         3 77813800…   2.8 Tyro… 3.4e- 61 https:…     3
+#> # … with 542 more rows, and 23 more variables: kg <chr>, ndom <dbl>,
+#> #   nincluded <dbl>, niseqs <dbl>, nregions <dbl>, nreported <dbl>, ph <chr>,
+#> #   pvalue <dbl>, score <dbl>, sindex <dbl>, species <chr>, taxid <dbl>,
+#> #   taxlink <chr>, superkingdom <chr>, kingdom <chr>, subphylum <chr>,
+#> #   superclass <chr>, class <chr>, order <chr>, suborder <chr>, family <chr>,
+#> #   subfamily <chr>, genus <chr>
+```
 
 You’ll still need to render `README.Rmd` regularly, to keep `README.md`
 up-to-date. `devtools::build_readme()` is handy for this. You could also

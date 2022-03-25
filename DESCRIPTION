@@ -20,9 +20,15 @@ Config/testthat/edition: 3
 Imports: 
     Biostrings,
     dplyr,
+    furrr,
     magrittr,
+    progressr,
     purrr,
     readr,
     stringr,
+    taxizedb,
     tibble,
+    tidyr,
     xml2
+Enhances: 
+    future
