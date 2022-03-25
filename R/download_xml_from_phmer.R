@@ -8,8 +8,7 @@
 #' @examples
 #' \dontrun{
 #' download_xml_from_phmer(body_list =
-#'     list(seqdb = "pdb",seq = '>Seq\nKLRVLGYH'),
-#'     verbose = TRUE)
+#'     list(seqdb = "pdb",seq = '>Seq\nKLRVLGYH'))
 #' }
 download_xml_from_phmer <- function(body_list) {
   if (!requireNamespace("httr", quietly = TRUE)) {

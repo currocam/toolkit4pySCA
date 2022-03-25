@@ -2,4 +2,5 @@
 
 export("%>%")
 export(download_xml_from_phmer)
+export(quick_AA_search_using_phmmer)
 importFrom(magrittr,"%>%")

@@ -18,7 +18,6 @@ download_xml_from_phmer
 \examples{
 \dontrun{
 download_xml_from_phmer(body_list =
-    list(seqdb = "pdb",seq = '>Seq\nKLRVLGYH'),
-    verbose = TRUE)
+    list(seqdb = "pdb",seq = '>Seq\nKLRVLGYH'))
 }
 }
