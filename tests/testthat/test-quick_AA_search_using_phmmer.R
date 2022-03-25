@@ -1,3 +1,5 @@
+skip_if_offline()
+skip_if_not_installed("Biostrings")
 test_that("quick AA search works", {
   seq <- "KLRVLGYHNGEWCEAQTKNGQGWVPSNYITPVNSLENSIDKHSWYHGPVSRNAAEY"
   db <- "pdb"

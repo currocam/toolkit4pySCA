@@ -1,5 +1,6 @@
-if (requireNamespace("xml2", quietly = TRUE)) {
-  test_that("example request works", {
+skip_if_offline()
+skip_if_not_installed("xml2")
+test_that("example request works", {
     body <- list(
       seqdb = "pdb",
       seq = ">Seq\nKLRVLGYHNGEWCEAQTKNGQGWVPSNYITPVNSLENSIDKHSWYHGPVSRNAAEY"
@@ -11,10 +12,10 @@ if (requireNamespace("xml2", quietly = TRUE)) {
       expect_gt(0)
   })
 
-  test_that("empty body fails", {
+test_that("empty body fails", {
     body <- list()
     download_xml_from_phmer(body_list = body) %>%
       testthat::expect_error()
   })
-  }
+
 
