@@ -1,20 +1,19 @@
 skip_if_offline()
-skip_if_not_installed("xml2")
+skip_if_not_installed("stringr")
+testthat::skip_on_ci()
 test_that("example request works", {
     body <- list(
       seqdb = "pdb",
       seq = ">Seq\nKLRVLGYHNGEWCEAQTKNGQGWVPSNYITPVNSLENSIDKHSWYHGPVSRNAAEY"
     )
-    download_xml_from_phmer(body_list = body) %>%
-      xml2::read_xml()%>%
-      xml2::xml_find_all("//hits") %>%
-      length(.) %>%
-      expect_gt(0)
+    post_request_to_phmer(body_list = body) %>%
+      stringr::str_detect("hmmer/results") %>%
+      testthat::expect_true()
   })
 
 test_that("empty body fails", {
     body <- list()
-    download_xml_from_phmer(body_list = body) %>%
+    post_request_to_phmer(body_list = body) %>%
       testthat::expect_error()
   })
 

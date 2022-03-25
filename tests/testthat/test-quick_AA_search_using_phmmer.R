@@ -1,33 +1,43 @@
 skip_if_offline()
 skip_if_not_installed("Biostrings")
 test_that("quick AA search works", {
-  seq <- "KLRVLGYHNGEWCEAQTKNGQGWVPSNYITPVNSLENSIDKHSWYHGPVSRNAAEY"
+  seq <- "KLRVLGYHNGEWCEAQTKNGQ"
   db <- "pdb"
   quick_AA_search_using_phmmer(seq, db) %>%
-    expect_error(NA)
+    dplyr::pull(results_url) %>%
+    magrittr::extract2(1)%>%
+    is.na(.) %>%
+    testthat::expect_false()
 })
 
 test_that("quick AA search using ensembl works", {
-  seq <- "KLRVLGYHNGEWCEAQTKNGQGWVPSNYITPVNSLENSIDKHSWYHGPVSRNAAEY"
+  seq <- "KLRVLGYHNGEWCEAQTKNGQ"
   db <- "ensembl"
-  quick_AA_search_using_phmmer(seq, db) %>%
-    expect_error(NA)
+  quick_AA_search_using_phmmer(seq, db)  %>%
+    dplyr::pull(results_url) %>%
+    magrittr::extract2(1)%>%
+    is.na(.) %>%
+    testthat::expect_false()
 })
 
 test_that("search using nucleic acid fails", {
   seq <- "AATCCGCTAGAATCCGCTAGAATCCGCTAG"
   db <- "pdb"
-  quick_AA_search_using_phmmer(seq, db) %>%
-    expect_error()
+  quick_AA_search_using_phmmer(seq, db)  %>%
+    dplyr::pull(results_url) %>%
+    magrittr::extract2(1)%>%
+    is.na(.) %>%
+    testthat::expect_true()
 })
 
 test_that("quick AA search using Biostrings", {
-  seq <- Biostrings::AAString(
-  paste0("MGPSENDPNLFVALYDFVASGDNTLSITKGEKLRVLGYNHNGEWCEAQTKNGQGWVPSNYITPVNSLE",
-  "KHSWYHGPVSRNAAEYLLSSGINGSFLVRESESSPGQRSISLRYEGRVYHYRINTASDGKLYVSSESRFNTLAELV",
-  "HHHSTVADGLITTLHYPAP")
+  seq <- Biostrings::AAStringSet(
+  c("MGPSENDPNLFVALYDFVASGDNTLSI",
+  "KLRVLGYHNGEWCEAQTKNGQ")
   )
-  db <- "pdb"
+  db <- c("pdb", "swissprot")
   quick_AA_search_using_phmmer(seq, db) %>%
-    expect_error(NA)
+    length() %>%
+    testthat::expect_gt(0)
 })
+

@@ -2,8 +2,11 @@
 
 export("%>%")
 export(download_tax_from_ncbi)
-export(download_xml_from_phmer)
+export(extract_tidy_df_from_hmmer)
+export(extract_tidy_domains_from_xml)
 export(extract_tidy_hits_from_xml)
 export(extract_tidy_stats_from_xml)
+export(post_request_to_phmer)
 export(quick_AA_search_using_phmmer)
 importFrom(magrittr,"%>%")
+importFrom(rlang,.data)

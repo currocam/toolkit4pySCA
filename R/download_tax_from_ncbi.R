@@ -12,8 +12,8 @@
 #'     list(seqdb = "pdb",seq = '>Seq\nKLRVLGYH'))
 #' }
 download_tax_from_ncbi <- function(taxid,
-  rank_vc = c("superkingdom", "kingdom","phylum", "subphylum","superclass",
-    "class","suborder",  "order","family","subfamily","genus","species")) {
+  rank_vc = c("superkingdom", "kingdom", "subphylum","superclass",
+    "class","suborder",  "order","family","subfamily","genus")) {
   if (!requireNamespace("progressr", quietly = TRUE)) {
     stop(
       "Package \"progressr\" must be installed to use this function.",
