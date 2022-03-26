@@ -148,7 +148,72 @@ tax.df <- hits %>%
 hits %>%
   left_join(tax.df, by = c("taxid" = "taxid"))
 ```
+```{r}
+pdb.id <- "2ABL"
+pdb.url <- paste0("https://files.rcsb.org/download/",
+                  pdb.id, ".pdb")
+curl::curl_download(pdb.url, paste0(path, pdb.id, ".pdb"))
+```
+
+``` bash
+scaProcessMSA -a 2abl_A_significant.ClustalW.aln -s 2ABL 
+
+Loaded alignment of 602 sequences, 3039 positions.
+Checking alignment for non-standard amino acids
+Aligment size after removing sequences with non-standard amino acids: 600
+Trimming alignment for highly gapped positions (80% or more).
+Alignment size post-trimming: 625 positions
+Looking for PDBs in .
+Finding reference sequence using global MSAsearch...
+Trying MSASearch with ggsearch
+reference sequence index is: 296
+2abl_A
+----------------------------------------------------------------M-GPSENDPNVALYDFVASGDNTLSITKGEKHNGEWCEAQTKN-QGWVPSNYITPVNSLEKHSWYHGPVSRNAAEYLLSSGINGSFLVRESESSPGQRSISLRYEGR--------VYHYRINTASDGKLYVSSESRFNTLAELVHHHSTVAD--GLITTLHYPAP------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+len refseq 163, len refpos 163, len algseq 625, len pairalg 635, len gloalg 625
+Conducting sequence and position filtering: alignment size is 600 seqs, 625 pos
+ATS and distmat size - ATS: 625, distmat: 625 x 625
+Keeping 60 sequences of 600 sequences (after filtering for gaps)
+Keeping 46 sequences of 60 sequences (after filtering for seq similarity)
+After filtering: alignment size is 46 seqs, 11 effective seqs, 504 pos
+Final alignment parameters:
+Number of sequences: M = 46
+Number of effective sequences: M' = 11
+Number of alignment positions: L = 504
+Number of positions in the ats: 504
+Number of structure positions mapped: 152
+Size of the distance matrix: 504 x 504
+Opening database file 
+
+scaCore -i 2abl_A_significant.ClustalW.db
+
+omputing the sequence projections.
+basicICA failed to converge: 36.454102510130255
+basicICA failed to converge: 50.01948709627572
+basicICA failed to converge: 9.683913030829293
+Computing sequence similarity matrix.
+Computing the SCA conservation and correlation values.
+Computing matrix randomizations...
+Randomizations complete, 10 trials, time: 1.4 minutes
+Calculations complete, writing to database file
+
+scaSectorID -i 2abl_A_significant.ClustalW.db 
+
+Selected kpos=5 significant eigenmodes.
+Calculations complete, writing to database file
+```
+
+```{r}
+pysca <- import_pySCA_module_using_reticulate( 
+  condaenv = "r-pySCA",force_installing = TRUE
+  )
+#reticulate::py_module_available(c("Bio"))
+#db <- reticulate::py_load_object("inst/extdata/2abl_A_significant.ClustalW.db", pickle = "pickle")
 
 
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
+
+```
+
+```{r}
+
+```
 

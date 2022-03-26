@@ -15,7 +15,7 @@ extract_tidy_df_from_hmmer(
 \item{by_column}{A character vector for joining domains hash with sequence's hits hash.}
 }
 \value{
-
+DataFrame
 }
 \description{
 extract_tidy_df_from_hmmer
