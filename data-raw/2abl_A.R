@@ -42,4 +42,23 @@ df.phmmer.info <- xml.files %>%
       extract_tidy_df_from_hmmer,
     .id = "db")
 phmmer_2abl_A <- list("df" = df.phmmer.info, "fullfasta" = fasta.files)
-usethis::use_data(phmmer_2abl_A, overwrite = FALSE)
+library(dplyr)
+alisqacc_significant <- phmmer_2abl_A$df %>%
+  filter(evalue < 0.001) %>%
+  group_by(alisqacc) %>%
+  summarise(alisqacc = alisqacc,
+            bestDomainEvalue = max(ievalue)) %>%
+  filter(bestDomainEvalue< 0.001) %>%
+  pull(alisqacc)
+
+sequences <- phmmer_2abl_A$fullfasta[alisqacc_significant] %>%
+  unique()
+length(sequences)
+writeXStringSet(sequences, filepath = "inst/extdata/2abl_A_significant.fullseq.fa")
+myClustalWAlignment <- msa::msaClustalW(sequences)
+
+myClustalWAlignment %>%
+  unmasked() %>%
+  writeXStringSet("inst/extdata/2abl_A_significant.ClustalW.aln")
+phmmer_2abl_A <- append(phmmer_2abl_A, list("aln" = myClustalWAlignment))
+usethis::use_data(phmmer_2abl_A, overwrite = TRUE)
