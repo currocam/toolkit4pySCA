@@ -29,7 +29,7 @@ pairwise_sequence_identities_data <- function(db){
 }
 
 
-#' It plots pairwise sequence identities
+#' Plot a histogram of all pairwise sequence identities
 #'
 #' @param db Pickle pySCA
 #'
@@ -40,4 +40,3 @@ pairwise_sequence_identities_hist <- function(db) {
     ggplot2::geom_histogram(binwidth=0.01, color="#e9ecef", alpha=0.9) +
     ggplot2::labs(x = "Pairwise sequence identities", y = "Number")
 }
-

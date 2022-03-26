@@ -2,7 +2,7 @@
 % Please edit documentation in R/pairwise_sequence_identities_data.R
 \name{pairwise_sequence_identities_hist}
 \alias{pairwise_sequence_identities_hist}
-\title{It plots pairwise sequence identities}
+\title{Plot a histogram of all pairwise sequence identities}
 \usage{
 pairwise_sequence_identities_hist(db)
 }
@@ -10,5 +10,5 @@ pairwise_sequence_identities_hist(db)
 \item{db}{Pickle pySCA}
 }
 \description{
-It plots pairwise sequence identities
+Plot a histogram of all pairwise sequence identities
 }
