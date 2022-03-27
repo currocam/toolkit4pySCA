@@ -1,12 +1,12 @@
 #' It computes the data from the PCA and IC and creates a tidy DataFrame
-#'  in order to visualize the projections
+#'  in order to visualize the projections of the sequence correlation matrix.
 #'
 #' @param db Pickle pySCA
 #'
 #' @return Data Frame
 #' @export
 #'
-sequence_correlation_matrix_data <- function(db){
+sequence_correlation_matrix_projections_data <- function(db){
   if(is.null(db$sequence$seqw))
     stop("'sequence weights not found")
   if(is.null(db$sequence$hd))
@@ -14,7 +14,7 @@ sequence_correlation_matrix_data <- function(db){
   headers <- db$sequence$hd
   if(length(headers) != length(unique(headers))){
     headers <- make.unique(headers)
-    warning("Sequence headers are not unique.")
+    warning("Sequence headers are not unique, make.unique has been used")
   }
   if(is.null(db$sca$Useq))
     stop("'Useq not found")
@@ -52,10 +52,12 @@ sequence_correlation_matrix_data <- function(db){
 #' @param db Pickle pySCA
 #'
 #' @export
-sequence_correlation_matrix_plot <- function(db) {
-  plot_data <- sequence_correlation_matrix_data(db)
+
+sequence_correlation_matrix_projections_plot <- function(db) {
+  plot_data <- toolkit4pySCA::sequence_correlation_matrix_projections_data(db)
   ggplot2::ggplot(plot_data, ggplot2::aes(x=.data$V1, y=.data$V2)) +
     ggplot2::geom_point(ggplot2::aes(colour = .data$sequence.weights, alpha = 0.5)) +
     ggplot2::labs(x = "V1", y = "V2")+
-    ggplot2::facet_grid(.data$type.projections ~ .data$mode, scales = "free")
+    ggplot2::facet_grid(.data$type.projections ~ .data$mode, scales = "free")+
+    ggplot2::ggtitle("Projections of the sequence correlation matrix ")
 }

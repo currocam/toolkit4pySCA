@@ -23,6 +23,7 @@ Imports:
     dplyr,
     furrr,
     ggplot2,
+    graphics,
     magrittr,
     progressr,
     purrr,

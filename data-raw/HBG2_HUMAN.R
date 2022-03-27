@@ -80,3 +80,6 @@ path <- "inst/extdata/HBG2_HUMAN.ClustalW.db"
 pySCA_HBG2_HUMAN <- read_pySCA_pickle(path)
 
 usethis::use_data(pySCA_HBG2_HUMAN, overwrite = TRUE)
+
+db <-pySCA_HBG2_HUMAN
+  db %>% toolkit4pySCA::eigenspectrum_SCA_positional_coevolution_matrix_plot()

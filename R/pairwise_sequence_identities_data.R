@@ -15,11 +15,11 @@ pairwise_sequence_identities_data <- function(db){
   headers <- db$sequence$hd
   if(length(headers) != length(unique(headers))){
     headers <- make.unique(headers)
-    warning("Sequence headers are not unique.")
+    warning("Sequence headers are not unique, make.unique has been used")
   }
   simMat[lower.tri(simMat)] <- NA
   simMat%>%
-    tibble::as_tibble() %>%
+    as.data.frame() %>%
     magrittr::set_colnames(headers) %>%
     dplyr::mutate(seq.1 = headers)%>%
     tidyr::pivot_longer(- c("seq.1"),

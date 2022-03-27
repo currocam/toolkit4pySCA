@@ -14,7 +14,7 @@ global_similarity_matrix_data <- function(db){
   headers <- db$sequence$hd
   if(length(headers) != length(unique(headers))){
     headers <- make.unique(headers)
-    warning("Sequence headers are not unique.")
+    warning("Sequence headers are not unique, make.unique has been used")
   }
   rownames(simMat) <- headers
   colnames(simMat) <- headers
@@ -28,6 +28,6 @@ global_similarity_matrix_data <- function(db){
 #'
 #' @export
 global_similarity_matrix_heatmap <- function(db) {
-  plot_data <- global_similarity_matrix_data(db)
-  return(heatmap(plot_data))
+  plot_data <- toolkit4pySCA::global_similarity_matrix_data(db)
+  return(stats::heatmap(plot_data, labRow=FALSE, labCol = FALSE))
 }

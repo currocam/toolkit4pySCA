@@ -17,5 +17,16 @@ read_pySCA_pickle <- function(path){
     stop("'The pysca module could not be found. Please call the import_pySCA_module_using_reticulate function first.")
 
   db <- reticulate::py_load_object(path, pickle = "pickle")
+
+  ics <- db$sector$ics %>%
+    purrr::map_dfr(~{
+      tibble::tibble(
+        items = .x$items,
+        vect = .x$vect ) %>%
+        dplyr::mutate(
+          col = .x$col,
+          name = .x$name)},
+      .id = "ics")
+  db$sector$ics_tidy_df <- ics
   return(structure(db, class = "pySCA_pickle"))
   }
